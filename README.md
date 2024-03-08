@@ -22,7 +22,3 @@ node generate_witness.js basic.wasm input.json out.wtns
 wasmtime --dir . pkg/circom.wasm --output output basic.circom --wasm
 cd output/basic_js
 node generate_witness.js basic.wasm input.json out.wtns
-
-# Copying
-cp pkg/circom.wasm ../npm
-```

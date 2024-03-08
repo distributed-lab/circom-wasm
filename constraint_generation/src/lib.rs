@@ -24,6 +24,7 @@ use std::rc::Rc;
 pub struct BuildConfig {
     pub no_rounds: usize,
     pub flag_json_sub: bool,
+    pub json_substitutions: String,
     pub flag_s: bool,
     pub flag_f: bool,
     pub flag_p: bool,
@@ -59,9 +60,19 @@ pub fn build_circuit(program: ProgramArchive, config: BuildConfig) -> BuildRespo
     }
     if config.flag_f {
         sync_dag_and_vcp(&mut vcp, &mut dag);
+        if config.flag_json_sub { 
+            use constraint_writers::json_writer::SubstitutionJSON;
+            let substitution_log = SubstitutionJSON::new(&config.json_substitutions).unwrap();
+            let _ = substitution_log.end();
+            println!("{} {}", Colour::Green.paint("Written successfully:"), config.json_substitutions);
+        };
+
         Result::Ok((Box::new(dag), vcp))
     } else {
         let list = simplification_process(&mut vcp, dag, &config);
+        if config.flag_json_sub { 
+            println!("{} {}", Colour::Green.paint("Written successfully:"), config.json_substitutions);
+        };
         Result::Ok((Box::new(list), vcp))
     }
 }
@@ -97,6 +108,7 @@ fn simplification_process(vcp: &mut VCP, dag: DAG, config: &BuildConfig) -> Cons
         flag_s: config.flag_s,
         parallel_flag: config.flag_p,
         port_substitution: config.flag_json_sub,
+        json_substitutions: config.json_substitutions.clone(),
         no_rounds: config.no_rounds,
         flag_old_heuristics: config.flag_old_heuristics,
         prime : config.prime.clone(),

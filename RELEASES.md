@@ -1,5 +1,39 @@
 # Release notes
 
+## Jan 17, 2024 circom 2.1.8
+
+#### Extensions
+- Adding flag --simplification_substitutions: outputs a .json file including information about the substitutions performed during the constraint simplifications
+- Adding the prime number secq256r1.
+- Removing non-determinism in R1CS generation: fixing assignment order of anonymous components inputs
+- Improving error message: case assignment to signal of not initialized component
+- Removing unnecessary clones
+- Improving documentation: types of signal assignments, output-file format descriptions, compilation options,
+- Improving the README file with more community tools and projects. 
+
+#### Fixed bugs
+- Printing errors and warnings in custom gates correctly
+- Removing panic caused by edge case in function display_trace()
+
+  
+## Dec 15, 2023 circom 2.1.7
+
+#### Extensions
+- Fixing typos and improving documentation.
+- Improving error messages: missing tags in inputs and use of operator ++x.
+- Adding info of number of private inputs in witness in R1CS message and removing message of circom safe.
+  
+#### Fixed Bugs 
+- Fixing a panic produced when the two branches of an if instruction are not compatible.
+- Fixing C++ code generated: input counter decrease inside assert => Moved outside the assert.
+- Fixing c++ code generated for macos with clang 14.0.0.
+- Fixing a bug in parallel definition at component level not working as expected.
+- Fixing a bug in parallel components not working as expected when considering assignments of the inputs given by names (A()(in_1 <== x, in_2 <== y)).
+- Fixing a bug in c++ code generation produced when the last assigned input has size 0.
+- Fixing a panic: handling case array of components with different signals (signals defined inside blocks ifs).
+- Fixing a panic: error when processing sizes of arrays of variables in functions, panic in merger when processing complex expressions.
+
+  
 ## June 22, 2023 circom 2.1.6
 
 #### Extensions
@@ -9,7 +43,7 @@
 - Updating the documentation.
 - Added check on the name of the circom file when --C is used to avoid clashes with reserved names. When the file is called main.circom, fr.circom or calcwit.circom it is changed to main_c, fr_c and calcwit_c respectively.
 
-#### Bugs 
+#### Fixed Bugs 
 - Fixing a bug while parsing anonymous components.
 - Fixing a problem in calls to anonymous components with signal names.
 - Fixing a bug in wasm witness generation that happened when doing a call inside an array index.

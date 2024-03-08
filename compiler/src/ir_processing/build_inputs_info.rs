@@ -12,17 +12,17 @@ pub fn visit_list(
     inside_loop: bool
 )-> bool {
     let len_instructions = instructions.len();
-    let mut found_unkown_aux = found_unknown_address;
+    let mut found_unknown_aux = found_unknown_address;
     for i in 0..instructions.len(){
-        found_unkown_aux = visit_instruction(
+        found_unknown_aux = visit_instruction(
             &mut instructions[len_instructions - 1 - i],
             known_last_component,
             unknown_last_component, 
-            found_unkown_aux,
+            found_unknown_aux,
             inside_loop
         );
     }
-    found_unkown_aux
+    found_unknown_aux
 }
 
 pub fn visit_instruction(
@@ -98,13 +98,17 @@ pub fn visit_call(
     use ReturnType::*;
 
     if let Final(data) = &mut bucket.return_info {
-        visit_address_type(
-            &mut data.dest_address_type, 
-            known_last_component,
-            unknown_last_component,
-            found_unknown_address,
-            inside_loop
-        )
+        if data.context.size > 0{
+            visit_address_type(
+                &mut data.dest_address_type, 
+                known_last_component,
+                unknown_last_component,
+                found_unknown_address,
+                inside_loop
+            )
+        } else{
+            found_unknown_address
+        }
     }
     else{
         found_unknown_address
@@ -212,13 +216,17 @@ pub fn visit_store(
     found_unknown_address: bool,
     inside_loop: bool
 )-> bool{
-    visit_address_type(
-        &mut bucket.dest_address_type, 
-        known_last_component,
-        unknown_last_component,
-        found_unknown_address,
-        inside_loop
-    )
+    if bucket.context.size > 0{
+        visit_address_type(
+            &mut bucket.dest_address_type, 
+            known_last_component,
+            unknown_last_component,
+            found_unknown_address,
+            inside_loop
+        )
+    } else{
+        found_unknown_address
+    }
 }
 
 

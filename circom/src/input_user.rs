@@ -4,6 +4,7 @@ pub struct Input {
     pub input_program: PathBuf,
     pub out_r1cs: PathBuf,
     pub out_json_constraints: PathBuf,
+    pub out_json_substitutions: PathBuf,
     pub out_wat_code: PathBuf,
     pub out_wasm_code: PathBuf,
     pub out_wasm_name: String,
@@ -31,7 +32,10 @@ pub struct Input {
     pub no_rounds: usize,
     pub flag_verbose: bool,
     pub prime: String,
-    pub link_libraries : Vec<PathBuf>
+    pub link_libraries : Vec<PathBuf>,
+    pub save_ast: bool,
+    pub ast_path: PathBuf,
+    pub dry_run: bool,
 }
 
 
@@ -82,6 +86,11 @@ impl Input {
                 &format!("{}_constraints", file_name),
                 JSON,
             ),
+            out_json_substitutions: Input::build_output(
+                &output_path,
+                &format!("{}_substitutions", file_name),
+                JSON,
+            ),
             wat_flag:input_processing::get_wat(&matches),
             wasm_flag: input_processing::get_wasm(&matches),
             c_flag: c_flag,
@@ -99,7 +108,10 @@ impl Input {
             flag_old_heuristics: input_processing::get_flag_old_heuristics(&matches),
             flag_verbose: input_processing::get_flag_verbose(&matches), 
             prime: input_processing::get_prime(&matches)?,
-            link_libraries
+            link_libraries,
+            save_ast: input_processing::get_save_ast(&matches),
+            ast_path: input_processing::get_ast_path(&matches),
+            dry_run: input_processing::get_dry_run(&matches),
         })
     }
 
@@ -157,6 +169,9 @@ impl Input {
     }
     pub fn json_constraints_file(&self) -> &str {
         self.out_json_constraints.to_str().unwrap()
+    }
+    pub fn json_substitutions_file(&self) -> &str {
+        self.out_json_substitutions.to_str().unwrap()
     }
     pub fn wasm_flag(&self) -> bool {
         self.wasm_flag
@@ -310,6 +325,7 @@ mod input_processing {
     pub fn get_flag_old_heuristics(matches: &ArgMatches) -> bool {
         matches.is_present("flag_old_heuristics")
     }
+
     pub fn get_prime(matches: &ArgMatches) -> Result<String, ()> {
         
         match matches.is_present("prime"){
@@ -322,6 +338,7 @@ mod input_processing {
                       || prime_value == "grumpkin"
                       || prime_value == "pallas"
                       || prime_value == "vesta"
+                      || prime_value == "secq256r1"
                       {
                         Ok(String::from(matches.value_of("prime").unwrap()))
                     }
@@ -332,6 +349,39 @@ mod input_processing {
                
             false => Ok(String::from("bn128")),
         }
+    }
+
+    pub fn get_save_ast(matches: &ArgMatches) -> bool {
+        matches.is_present("save_ast")
+    }
+
+    pub fn get_ast_path(matches: &ArgMatches) -> PathBuf {
+        match matches.is_present("save_ast"){
+            true => 
+               {
+                   let path = matches.value_of("save_ast").unwrap();
+                   if path != "" {
+                        let path = Path::new(path);
+                        if let Some(parent) = path.parent() {
+                            std::fs::create_dir_all(parent).unwrap();
+                        }
+                        
+                        if path.is_dir() {
+                            PathBuf::from(path.join("ast.json").to_str().unwrap())
+                        } else {
+                            PathBuf::from(path.to_str().unwrap())
+                        }
+                    } else {
+                        PathBuf::from("ast.json")
+                    }
+               }
+               
+            false => PathBuf::from("ast.json"),
+        }
+    }
+
+    pub fn get_dry_run(matches: &ArgMatches) -> bool {
+        matches.is_present("dry_run")
     }
 
     pub fn view() -> ArgMatches<'static> {
@@ -358,7 +408,7 @@ mod input_processing {
                     .long("O1")
                     .hidden(false)
                     .takes_value(false)
-                    .help("Only applies var to var and var to constant simplification")
+                    .help("Only applies signal to signal and signal to constant simplification")
                     .display_order(460)
             )
             .arg(
@@ -410,11 +460,10 @@ mod input_processing {
             )
             .arg(
                 Arg::with_name("print_json_sub")
-                    .long("jsons")
+                    .long("simplification_substitution")
                     .takes_value(false)
-                    .hidden(true)
-                    .display_order(100)
-                    .help("Outputs the substitution in json format"),
+                    .display_order(980)
+                    .help("Outputs the substitution applied in the simplification phase in json format"),
             )
             .arg(
                 Arg::with_name("print_sym")
@@ -498,7 +547,21 @@ mod input_processing {
                     .takes_value(true)
                     .default_value("bn128")
                     .display_order(300)
-                    .help("To choose the prime number to use to generate the circuit. Receives the name of the curve (bn128, bls12381, goldilocks, grumpkin, pallas, vesta)"),
+                    .help("To choose the prime number to use to generate the circuit. Receives the name of the curve (bn128, bls12381, goldilocks, grumpkin, pallas, vesta, secq256r1)"),
+            )
+            .arg(
+                Arg::with_name("save_ast")
+                    .long("save_ast")
+                    .takes_value(true)
+                    .display_order(990)
+                    .help("If --save_ast is specified, the compiler will save the serialized AST of the circuit, accepts a file name as argument [default: ast.json]"),
+            )
+            .arg(
+                Arg::with_name("dry_run")
+                    .long("dry_run")
+                    .takes_value(false)
+                    .display_order(1000)
+                    .help("Does not run the compiler, only checks the input and outputs the AST if --save_ast is present"),
             )
             .get_matches()
     }
