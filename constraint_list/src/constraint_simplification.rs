@@ -202,50 +202,25 @@ fn eq_simplification(
     field: &BigInt,
     substitution_log: &mut Option<SubstitutionJSON>,
 ) -> (LinkedList<S>, LinkedList<C>) {
-    use std::sync::mpsc;
-    use threadpool::ThreadPool;
+    
     let field = Arc::new(field.clone());
     let mut constraints = LinkedList::new();
     let mut substitutions = LinkedList::new();
     let clusters = build_clusters(equalities, no_vars);
-    let (cluster_tx, simplified_rx) = mpsc::channel();
-    let pool = ThreadPool::new(num_cpus::get());
-    let no_clusters = Vec::len(&clusters);
+    
     // println!("Clusters: {}", no_clusters);
-    let mut single_clusters = 0;
+    // let mut single_clusters = 0;
     let mut id = 0;
-    let mut aux_constraints = vec![LinkedList::new(); clusters.len()];
     for cluster in clusters {
-        if Cluster::size(&cluster) == 1 {
-            let (mut subs, cons) = eq_cluster_simplification(cluster, &forbidden, &field);
-            aux_constraints[id] = cons;
-            LinkedList::append(&mut substitutions, &mut subs);
-            single_clusters += 1;
-        } else {
-            let cluster_tx = cluster_tx.clone();
-            let forbidden = Arc::clone(&forbidden);
-            let field = Arc::clone(&field);
-            let job = move || {
-                //println!("Cluster: {}", id);
-                let result = eq_cluster_simplification(cluster, &forbidden, &field);
-                //println!("End of cluster: {}", id);
-                cluster_tx.send((id, result)).unwrap();
-            };
-            ThreadPool::execute(&pool, job);
-        }
+        let (mut subs, mut cons) = eq_cluster_simplification(cluster, &forbidden, &field);
+        LinkedList::append(&mut substitutions, &mut subs);
+        LinkedList::append(&mut constraints, &mut cons);
+        // single_clusters += 1;
+    
         let _ = id;
         id += 1;
     }
     // println!("{} clusters were of size 1", single_clusters);
-    ThreadPool::join(&pool);
-    for _ in 0..(no_clusters - single_clusters) {
-        let (id, (mut subs, cons)) = simplified_rx.recv().unwrap();
-        aux_constraints[id] = cons;
-        LinkedList::append(&mut substitutions, &mut subs);
-    }
-    for id in 0..no_clusters {
-        LinkedList::append(&mut constraints, &mut aux_constraints[id]);
-    }
     log_substitutions(&substitutions, substitution_log);
     (substitutions, constraints)
 }
@@ -282,20 +257,15 @@ fn linear_simplification(
 ) -> (LinkedList<S>, LinkedList<C>) {
     use circom_algebra::simplification_utils::full_simplification;
     use circom_algebra::simplification_utils::Config;
-    use std::sync::mpsc;
-    use threadpool::ThreadPool;
 
     // println!("Cluster simplification");
     let mut cons = LinkedList::new();
     let mut substitutions = LinkedList::new();
     let clusters = build_clusters(linear, no_labels);
-    let (cluster_tx, simplified_rx) = mpsc::channel();
-    let pool = ThreadPool::new(num_cpus::get());
-    let no_clusters = Vec::len(&clusters);
+    
     // println!("Clusters: {}", no_clusters);
     let mut id = 0;
     for cluster in clusters {
-        let cluster_tx = cluster_tx.clone();
         let config = Config {
             field: field.clone(),
             constraints: cluster.constraints,
@@ -303,24 +273,16 @@ fn linear_simplification(
             num_signals: cluster.num_signals,
             use_old_heuristics,
         };
-        let job = move || {
-            // println!("cluster: {}", id);
-            let result = full_simplification(config);
-            // println!("End of cluster: {}", id);
-            cluster_tx.send(result).unwrap();
-        };
-        ThreadPool::execute(&pool, job);
-        let _ = id;
-        id += 1;
-    }
-    ThreadPool::join(&pool);
-
-    for _ in 0..no_clusters {
-        let mut result = simplified_rx.recv().unwrap();
+        let mut result = full_simplification(config);
+        
         log_substitutions(&result.substitutions, log);
         LinkedList::append(&mut cons, &mut result.constraints);
         LinkedList::append(&mut substitutions, &mut result.substitutions);
+
+        let _ = id;
+        id += 1;
     }
+    
     (substitutions, cons)
 }
 
@@ -726,6 +688,3 @@ pub fn simplification(smp: &mut Simplifier) -> (ConstraintStorage, SignalMap, us
     // println!("NO CONSTANTS: {}", constraint_storage.no_constants());
     (constraint_storage, signal_map, smp.no_private_inputs - deleted_inputs)
 }
-
-
-

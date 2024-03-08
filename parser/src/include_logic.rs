@@ -1,8 +1,38 @@
 use program_structure::ast::produce_report_with_message;
 use program_structure::error_code::ReportCode;
 use program_structure::error_definition::Report;
-use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
+use std::collections::{HashSet, HashMap};
+use std::path::{Component, PathBuf};
+
+// Replacement for std::fs::canonicalize that doesn't verify the path exists
+// Plucked from https://github.com/rust-lang/cargo/blob/fede83ccf973457de319ba6fa0e36ead454d2e20/src/cargo/util/paths.rs#L61
+// Advice from https://www.reddit.com/r/rust/comments/hkkquy/comment/fwtw53s/?utm_source=share&utm_medium=web2x&context=3
+fn normalize_path(path: &PathBuf) -> PathBuf {
+    let mut components = path.components().peekable();
+    let mut ret = if let Some(c @ Component::Prefix(..)) = components.peek().cloned() {
+        components.next();
+        PathBuf::from(c.as_os_str())
+    } else {
+        PathBuf::new()
+    };
+
+    for component in components {
+        match component {
+            Component::Prefix(..) => unreachable!(),
+            Component::RootDir => {
+                ret.push(component.as_os_str());
+            }
+            Component::CurDir => {}
+            Component::ParentDir => {
+                ret.pop();
+            }
+            Component::Normal(c) => {
+                ret.push(c);
+            }
+        }
+    }
+    ret
+}
 
 pub struct FileStack {
     current_location: PathBuf,
@@ -29,17 +59,12 @@ impl FileStack {
             let mut path = PathBuf::new();
             path.push(lib);
             path.push(name.clone());
-            let path = std::fs::canonicalize(path);
-            match path {
-                Err(_) => {}
-                Ok(path) => {
-                    if path.is_file() {
-                        if !f_stack.black_paths.contains(&path) {
-                            f_stack.stack.push(path.clone());
-                        }
-                        return Result::Ok(path.to_str().unwrap().to_string());
-                    }
+            let path = normalize_path(&path);
+            if path.is_file() {
+                if !f_stack.black_paths.contains(&path) {
+                    f_stack.stack.push(path.clone());
                 }
+                return Result::Ok(path.to_str().unwrap().to_string());
             }
         }
         Result::Err(produce_report_with_message(ReportCode::IncludeNotFound, name))
@@ -90,8 +115,7 @@ impl IncludesGraph {
     pub fn add_edge(&mut self, old_path: String) -> Result<(), Report> {
         let mut crr = PathBuf::new();
         crr.push(old_path.clone());
-        let path = std::fs::canonicalize(crr)
-            .map_err(|_e| produce_report_with_message(ReportCode::FileOs, old_path))?;
+        let path = normalize_path(&crr);
         let edges = self.adjacency.entry(path).or_insert(vec![]);
         edges.push(self.nodes.len() - 1);
         Ok(())

@@ -20,9 +20,10 @@ pub fn run_compiler(vcp: VCP, config: Config, version: &str) -> Result<Circuit, 
 
 pub fn write_wasm(circuit: &Circuit, js_folder: &str, wasm_name: &str, file: &str) -> Result<(), ()> {
     use std::path::Path;
-    if Path::new(js_folder).is_dir() {
-        std::fs::remove_dir_all(js_folder).map_err(|_err| {})?;
-    }
+
+    // try to remove the folder if it exists twice, because sometimes it fails the first time
+    while Path::new(js_folder).is_dir() { std::fs::remove_dir_all(js_folder).ok(); }
+
     std::fs::create_dir(js_folder).map_err(|_err| {})?;
     let file = File::create(file).map_err(|_err| {})?;
     let mut writer = BufWriter::new(file);
@@ -31,9 +32,10 @@ pub fn write_wasm(circuit: &Circuit, js_folder: &str, wasm_name: &str, file: &st
 
 pub fn write_c(circuit: &Circuit, c_folder: &str, c_run_name: &str, c_file: &str, dat_file: &str) -> Result<(), ()> {
     use std::path::Path;
-    if Path::new(c_folder).is_dir() {
-        std::fs::remove_dir_all(c_folder).map_err(|_err| {})?;
-    }
+
+    // try to remove the folder if it exists twice, because sometimes it fails the first time
+    while Path::new(c_folder).is_dir() { std::fs::remove_dir_all(c_folder).ok(); }
+    
     std::fs::create_dir(c_folder).map_err(|_err| {})?;
     let dat_file = File::create(dat_file).map_err(|_err| {})?;
     let c_file = File::create(c_file).map_err(|_err| {})?;
@@ -46,9 +48,10 @@ fn produce_debug_output(circuit: &Circuit) -> Result<(), ()> {
     use std::io::Write;
     use std::path::Path;
     let path = format!("ir_log");
-    if Path::new(&path).is_dir() {
-        std::fs::remove_dir_all(&path).map_err(|_err| {})?;
-    }
+
+    // try to remove the folder if it exists twice, because sometimes it fails the first time
+    while Path::new(&path).is_dir() { std::fs::remove_dir_all(&path).ok(); }
+
     std::fs::create_dir(&path).map_err(|_err| {})?;
     for id in 0..circuit.templates.len() {
         let file = format!("ir_log/template_{}.txt", id);
