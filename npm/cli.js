@@ -5,14 +5,16 @@ const fs = require('fs')
 const path = require('path')
 
 async function main() {
-    const args = process.argv
+    let args = process.argv
         .slice(2)
-        .map((k) => (k.startsWith('-') ? k : path.relative(process.cwd(), k)))
+        .map((k) => (k.startsWith('-') ? k : k.endsWith('/') ? path.resolve(k) + '/' : path.resolve(k)))
+    if (!(args.includes('-o') && args.includes('--output')))
+        args.push('-o', process.cwd() + '/')
     if (args.length === 0) args.push('--help')
     const circom = new CircomRunner({
         args,
         env: process.env,
-        preopens: preopensFull(),
+        preopens: {"/":"/"},
         bindings: {
             ...bindings,
             exit(code) {
@@ -30,20 +32,6 @@ async function main() {
         console.log('circom2 npm package', require('./package.json').version)
     }
     await circom.execute(wasm_bytes)
-}
-
-// Enumerate all possible relative parent paths for the preopens.
-function preopensFull() {
-    const preopens = {}
-    let cwd = process.cwd()
-    while (1) {
-        const seg = path.relative(process.cwd(), cwd) || '.'
-        preopens[seg] = seg
-        const next = path.dirname(cwd)
-        if (next === cwd) break
-        cwd = next
-    }
-    return preopens
 }
 
 main().catch((err) => {
