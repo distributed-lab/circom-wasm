@@ -1,24 +1,31 @@
+[![npm](https://img.shields.io/npm/v/@distributedlab/circom2.svg)](https://www.npmjs.com/package/@distributedlab/circom2)
+[![License: GPLv3](https://img.shields.io/badge/license-GPLv3-yellow)](https://opensource.org/license/gpl-3-0)
+
 # Circom 2.0 WASM
 
-This is a proof of concept of Circom 2.0 compiled to WASM.
+This project is a version of Circom 2.0 compiled to WASM with AST serialization support.
 
-# Getting Started
+## Installation
 
+The package is distributed under Distributed Lab npm organization. Run the following commanad to install the compiler:
+
+```bash
+npm install @distributedlab/circom2
 ```
-cd circom
 
-# Compiling to WASM with rustwasmc/wasmedge
-npm install -g rustwasmc
-rustwasmc build --dev # fast compile, slow to run
-rustwasmc build --enable-aot # slow but optimized build
+> [!WARNING]
+> This is an experimental software. You may encounter nasty bugs.
 
-# Testing out the compiled version with wasmedge
-mkdir -p output
-~/.wasmedge/bin/wasmedge --dir .:. pkg/circom.wasm --output output basic.circom --wasm
-cd output/basic_js
-node generate_witness.js basic.wasm input.json out.wtns
+## Usage
 
-# Testing out the compiled version with wasmtime
-wasmtime --dir . pkg/circom.wasm --output output basic.circom --wasm
-cd output/basic_js
-node generate_witness.js basic.wasm input.json out.wtns
+You can use the compiler in the following way:
+
+```bash
+node cli.js <cli_arguments>
+```
+
+Or through using `CircomRunner` class directly. Check out `cli.js` file to learn how it is done.
+
+## Disclaimer
+
+GLHF!
