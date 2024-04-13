@@ -263,6 +263,12 @@ class WASIDefault {
                 },
             ],
         ])
+
+        if (wasiConfig && wasiConfig.quiet) {
+            this.FD_MAP.delete(constants_1.WASI_STDOUT_FILENO)
+            this.FD_MAP.delete(constants_1.WASI_STDERR_FILENO)
+        }
+
         let fs = this.bindings.fs
         let path = this.bindings.path
         for (const [k, v] of Object.entries(preopens)) {

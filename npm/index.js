@@ -58,7 +58,13 @@ const defaultPreopens = {
 }
 
 class CircomRunner {
-    constructor({ args, env, preopens = defaultPreopens, bindings = defaultBindings } = {}) {
+    constructor({
+        args,
+        env,
+        preopens = defaultPreopens,
+        bindings = defaultBindings,
+        quiet = false,
+    } = {}) {
         if (!bindings.fs) {
             throw new Error('You must specify an `fs`-compatible API as part of bindings')
         }
@@ -67,6 +73,7 @@ class CircomRunner {
             env,
             preopens,
             bindings,
+            quiet,
         })
     }
 
