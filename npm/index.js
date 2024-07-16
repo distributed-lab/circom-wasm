@@ -1,57 +1,5 @@
 const isTypedArray = require('is-typed-array')
-const path = require('path-browserify')
-
-const { WASI, WASIExitError, WASIKillError } = require('./vendor/wasi')
-
-const baseNow = Math.floor((Date.now() - performance.now()) * 1e-3)
-
-function hrtime() {
-    let clocktime = performance.now() * 1e-3
-    let seconds = Math.floor(clocktime) + baseNow
-    let nanoseconds = Math.floor((clocktime % 1) * 1e9)
-    // return BigInt(seconds) * BigInt(1e9) + BigInt(nanoseconds)
-    return seconds * 1e9 + nanoseconds
-}
-
-function randomFillSync(buf, offset, size) {
-    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-        // Similar to the implementation of `randomfill` on npm
-        let uint = new Uint8Array(buf.buffer, offset, size)
-        crypto.getRandomValues(uint)
-        return buf
-    } else {
-        try {
-            // Try to load webcrypto in node
-            let crypto = require('crypto')
-            // TODO: Update to webcrypto in nodejs
-            return crypto.randomFillSync(buf, offset, size)
-        } catch {
-            // If an error occurs, fall back to the least secure version
-            // TODO: Should we throw instead since this would be a crazy old browser
-            //       or nodejs built without crypto APIs
-            if (buf instanceof Uint8Array) {
-                for (let i = offset; i < offset + size; i++) {
-                    buf[i] = Math.floor(Math.random() * 256)
-                }
-            }
-            return buf
-        }
-    }
-}
-
-const defaultBindings = {
-    hrtime: hrtime,
-    exit(code) {
-        throw new WASIExitError(code)
-    },
-    kill(signal) {
-        throw new WASIKillError(signal)
-    },
-    randomFillSync: randomFillSync,
-    isTTY: () => true,
-    path: path,
-    fs: null,
-}
+const { WASI, WASIExitError } = require('wasi')
 
 const defaultPreopens = {
     '.': '.',
@@ -62,17 +10,13 @@ class CircomRunner {
         args,
         env,
         preopens = defaultPreopens,
-        bindings = defaultBindings,
         quiet = false,
     } = {}) {
-        if (!bindings.fs) {
-            throw new Error('You must specify an `fs`-compatible API as part of bindings')
-        }
         this.wasi = new WASI({
+            version: 'preview1',
             args: ['circom2', ...args],
             env,
             preopens,
-            bindings,
             quiet,
         })
     }
@@ -102,7 +46,7 @@ class CircomRunner {
     async execute(bufOrResponse) {
         const mod = await this.compile(bufOrResponse)
         const instance = await WebAssembly.instantiate(mod, {
-            ...this.wasi.getImports(mod),
+            ...this.wasi.getImportObject(),
         })
 
         try {
@@ -124,4 +68,3 @@ class CircomRunner {
 
 module.exports.CircomRunner = CircomRunner
 module.exports.preopens = defaultPreopens
-module.exports.bindings = defaultBindings
