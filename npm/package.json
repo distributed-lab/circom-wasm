@@ -1,6 +1,6 @@
 {
   "name": "@distributedlab/circom2",
-  "version": "0.2.18-rc.2",
+  "version": "0.2.18-rc.3",
   "description": "Circom 2.0 in WebAssembly",
   "main": "index.js",
   "scripts": {
