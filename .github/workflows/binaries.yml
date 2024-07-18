@@ -5,8 +5,9 @@ on:
       - '*'
 
 jobs:
-  build-and-publish:
+  publish:
     name: Publish for wasm
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
