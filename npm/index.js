@@ -1,9 +1,12 @@
-const isTypedArray = require('is-typed-array')
 const { WASI, WASIExitError } = require('wasi')
+const fs = require('fs')
+const os = require('node:os')
 
 const defaultPreopens = {
     '.': '.',
 }
+
+const nullDescriptor = fs.openSync(os.devNull)
 
 class CircomRunner {
     constructor({
@@ -17,34 +20,13 @@ class CircomRunner {
             args: ['circom2', ...args],
             env,
             preopens,
-            quiet,
+            stdout: quiet ? nullDescriptor : 1,
+            stderr: quiet ? nullDescriptor : 2,
         })
     }
 
-    async compile(bufOrResponse) {
-        // TODO: Handle ArrayBuffer
-        if (isTypedArray(bufOrResponse)) {
-            return WebAssembly.compile(bufOrResponse)
-        }
-
-        // Require Response object if not a TypedArray
-        const response = await bufOrResponse
-        if (!(response instanceof Response)) {
-            throw new Error('Expected TypedArray or Response object')
-        }
-
-        const contentType = response.headers.get('Content-Type') || ''
-
-        if ('instantiateStreaming' in WebAssembly && contentType.startsWith('application/wasm')) {
-            return WebAssembly.compileStreaming(response)
-        }
-
-        const buffer = await response.arrayBuffer()
-        return WebAssembly.compile(buffer)
-    }
-
     async execute(bufOrResponse) {
-        const mod = await this.compile(bufOrResponse)
+        const mod = await WebAssembly.compile(bufOrResponse)
         const instance = await WebAssembly.instantiate(mod, {
             ...this.wasi.getImportObject(),
         })
