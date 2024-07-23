@@ -21,10 +21,10 @@ npm install @distributedlab/circom2
 You can use the compiler in the following way:
 
 ```bash
-node cli.js <cli_arguments>
+npx ts-node cli.ts <cli_arguments>
 ```
 
-Or through using `CircomRunner` class directly. Check out `cli.js` file to learn how it is done.
+Or through using `CircomRunner` class directly. Check out `cli.ts` file to learn how it is done.
 
 ## Disclaimer
 
