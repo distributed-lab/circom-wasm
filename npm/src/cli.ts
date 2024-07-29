@@ -23,11 +23,11 @@ async function main() {
     preopens: { "/": "/" },
   });
 
-  const wasm_bytes = fs.readFileSync(require.resolve("./circom.wasm"));
+  const wasm_bytes = fs.readFileSync(require.resolve("../bin/circom.wasm"));
 
   // There is a slight delay between this logging and the circom compiler version logging
   if (args.includes("--version")) {
-    console.log("circom2 npm package", require("./package.json").version);
+    console.log("circom2 npm package", require("../package.json").version);
   }
 
   await circom.execute(wasm_bytes);

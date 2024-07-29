@@ -7,6 +7,12 @@
   "bin": {
     "circom2": "dist/cli.js"
   },
+  "files": [
+    "dist/",
+    "src/",
+    "bin/",
+    "README.md"
+  ],
   "scripts": {
     "test": "node test/test.js",
     "build": "tsc --build .",
