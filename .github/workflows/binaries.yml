@@ -15,7 +15,7 @@ jobs:
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
-          file: npm/circom.wasm
+          file: npm/bin/circom.wasm
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           asset_name: circom.wasm
