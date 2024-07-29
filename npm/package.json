@@ -1,16 +1,21 @@
 {
   "name": "@distributedlab/circom2",
-  "version": "0.2.19-rc.0",
+  "version": "0.2.19-rc.1",
   "description": "Circom 2.0 in WebAssembly",
-  "main": "index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "circom2": "dist/cli.js"
+  },
   "scripts": {
     "test": "node test/test.js",
-    "build": "docker build -o . ..",
-    "build-dev": "rustwasmc build --dev ../circom && cp ../circom/pkg/circom.wasm circom.wasm"
+    "build": "tsc --build .",
+    "build-compiler": "docker build -o . ..",
+    "build-compiler-dev": "rustwasmc build --dev ../circom && cp ../circom/pkg/circom.wasm circom.wasm"
   },
-  "repository": "https://github.com/distributed-lab/circom-wasm",
-  "bin": {
-    "circom2": "./cli.ts"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/distributed-lab/circom-wasm"
   },
   "engines": {
     "node": ">=16.3.0"
@@ -18,8 +23,7 @@
   "author": "Distributed Lab",
   "license": "GPL-3.0",
   "dependencies": {
-    "@wasmer/wasi": "^0.12.0",
-    "ts-node": "^10.9.2"
+    "@wasmer/wasi": "^0.12.0"
   },
   "devDependencies": {
     "@iden3/binfileutils": "^0.0.11",
