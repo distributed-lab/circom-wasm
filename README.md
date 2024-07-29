@@ -10,7 +10,7 @@ This project is a version of Circom 2.0 compiled to WASM with AST serialization 
 The package is distributed under Distributed Lab npm organization. Run the following commanad to install the compiler:
 
 ```bash
-npm install @distributedlab/circom2
+npm install --global @distributedlab/circom2
 ```
 
 > [!WARNING]
@@ -21,10 +21,10 @@ npm install @distributedlab/circom2
 You can use the compiler in the following way:
 
 ```bash
-node cli.js <cli_arguments>
+circom2 <cli_arguments>
 ```
 
-Or through using `CircomRunner` class directly. Check out `cli.js` file to learn how it is done.
+Or through using `CircomRunner` class directly. Check out `cli.ts` file to learn how it is done.
 
 ## Disclaimer
 

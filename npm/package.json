@@ -11,6 +11,7 @@
     "dist/",
     "src/",
     "bin/",
+    "LICENSE.md",
     "README.md"
   ],
   "scripts": {
