@@ -63,7 +63,7 @@ class CircomRunner {
         env,
         preopens = defaultPreopens,
         bindings = defaultBindings,
-        quiet = false,
+        descriptors = undefined,
     } = {}) {
         if (!bindings.fs) {
             throw new Error('You must specify an `fs`-compatible API as part of bindings')
@@ -73,7 +73,7 @@ class CircomRunner {
             env,
             preopens,
             bindings,
-            quiet,
+            descriptors,
         })
     }
 

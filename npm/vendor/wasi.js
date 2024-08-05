@@ -264,9 +264,14 @@ class WASIDefault {
             ],
         ])
 
-        if (wasiConfig && wasiConfig.quiet) {
-            this.FD_MAP.get(constants_1.WASI_STDOUT_FILENO).real = 1337;
-            this.FD_MAP.get(constants_1.WASI_STDERR_FILENO).real = 1337;
+        if (wasiConfig && wasiConfig.descriptors) {
+            if (wasiConfig.descriptors.stdout) {
+                this.FD_MAP.get(constants_1.WASI_STDOUT_FILENO).real = wasiConfig.descriptors.stdout
+            }
+
+            if (wasiConfig.descriptors.stderr) {
+                this.FD_MAP.get(constants_1.WASI_STDERR_FILENO).real = wasiConfig.descriptors.stderr
+            }
         }
 
         let fs = this.bindings.fs
