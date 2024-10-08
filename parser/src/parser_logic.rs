@@ -1,5 +1,6 @@
 use super::lang;
-use program_structure::ast::AST;
+use num_bigint::BigInt;
+use program_structure::ast::{AST};
 use program_structure::ast::produce_report;
 use program_structure::error_code::ReportCode;
 use program_structure::error_definition::{ReportCollection, Report};
@@ -83,14 +84,14 @@ pub fn preprocess(expr: &str, file_id: FileID) -> Result<String, ReportCollectio
     }
 }
 
-pub fn parse_file(src: &str, file_id: FileID) -> Result<AST, ReportCollection> {
+pub fn parse_file(src: &str, file_id: FileID, field: &BigInt) -> Result<AST, ReportCollection> {
     use lalrpop_util::ParseError::*;
 
     let mut errors = Vec::new();
     let preprocess = preprocess(src, file_id)?;
 
     let ast = lang::ParseAstParser::new()
-        .parse(file_id, &mut errors, &preprocess)
+        .parse(file_id, &mut errors, field, &preprocess)
         // TODO: is this always fatal?
         .map_err(|parse_error| match parse_error {
             InvalidToken { location } => 
