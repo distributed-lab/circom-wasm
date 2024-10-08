@@ -43,12 +43,20 @@ pub fn build_variable(meta: Meta, name: String, access: Vec<Access>) -> Expressi
     Variable { meta, name, access }
 }
 
-pub fn build_number(meta: Meta, value: BigInt) -> Expression {
+pub fn build_number(meta: Meta, value: BigInt, field: &BigInt) -> Expression {
+    Expression::Number(meta, value % field)
+}
+
+pub fn build_number_without_field(meta: Meta, value: BigInt) -> Expression {
     Expression::Number(meta, value)
 }
 
 pub fn build_call(meta: Meta, id: String, args: Vec<Expression>) -> Expression {
     Call { meta, id, args }
+}
+
+pub fn build_bus_call(meta: Meta, id: String, args: Vec<Expression>) -> Expression {
+    BusCall { meta, id, args }
 }
 
 pub fn build_anonymous_component(meta: Meta, id: String, params: Vec<Expression>, signals: Vec<Expression>, names: Option<Vec<(AssignOp, String)>>, is_parallel: bool) -> Expression {
