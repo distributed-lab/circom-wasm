@@ -1,6 +1,6 @@
 {
   "name": "@distributedlab/circom2",
-  "version": "0.2.20-rc.0",
+  "version": "0.2.21-rc.0",
   "description": "Circom 2.0 in WebAssembly",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,11 +33,11 @@
     "@wasmer/wasi": "^0.12.0"
   },
   "devDependencies": {
-    "@iden3/binfileutils": "^0.0.11",
-    "@types/node": "^20.14.11",
-    "prettier": "^2.5.1",
-    "r1csfile": "^0.0.41",
-    "typescript": "^5.5.4"
+    "@iden3/binfileutils": "^0.0.12",
+    "@types/node": "^22.15.17",
+    "prettier": "^3.5.3",
+    "r1csfile": "^0.0.48",
+    "typescript": "^5.8.3"
   },
   "optionalDependencies": {
     "rustwasmc": "^0.1.29"
