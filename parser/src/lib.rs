@@ -63,7 +63,8 @@ pub fn run_parser(
     file: String,
     version: &str,
     link_libraries: Vec<PathBuf>,
-    field: &BigInt,
+    field: &BigInt,     
+    flag_no_init: bool,
     save_ast: bool,
     ast_path: PathBuf,
 ) -> Result<(ProgramArchive, ReportCollection), (FileLibrary, ReportCollection)> {
@@ -85,7 +86,7 @@ pub fn run_parser(
         }
         let file_id = file_library.add_file(path.clone(), src.clone());
         let program =
-            parser_logic::parse_file(&src, file_id, field).map_err(|e| (file_library.clone(), e))?;
+            parser_logic::parse_file(&src, file_id, field, flag_no_init).map_err(|e| (file_library.clone(), e))?;
         if save_ast {
             ast_list.push(program.clone());
         }
