@@ -136,7 +136,7 @@
 ## February 10, 2023 circom 2.1.4
 
  #### Extensions
- - Improving the efficiency of the parser regarding the anonnymous components and tuples. 
+ - Improving the efficiency of the parser regarding the anonymous components and tuples. 
  - Improving the substitution process: better compilation times for --O1 and --O2.
  - Improving the handling of the underscore substitution.
  - Extending the substitution to allow the inheritance of signal tags.
@@ -274,7 +274,7 @@
 
 #### Extensions
 -	A check that all inputs are set is added in the wasm/JS and C++ generated code.
--	Improvement of the “merge_code” implementation in code generators. 
+-	Improvement of the "merge_code" implementation in code generators. 
 
 ## Nov 9, 2021 circom 2.0.1
 
